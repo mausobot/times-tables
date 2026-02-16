@@ -916,26 +916,31 @@
     }
     badgeContainer.style.textAlign = 'center';
 
-    // Check high scores
-    const isHighScore = checkHighScore(state.score);
-    document.getElementById('new-high-score').style.display = isHighScore ? 'block' : 'none';
-    document.getElementById('high-score-section').style.display = isHighScore ? 'none' : 'block';
+    // High scores only for timed test mode
+    if (state.mode === 'test') {
+      const isHighScore = checkHighScore(state.score);
+      document.getElementById('new-high-score').style.display = isHighScore ? 'block' : 'none';
+      document.getElementById('high-score-section').style.display = isHighScore ? 'none' : 'block';
 
-    if (isHighScore) {
-      state.pendingScore = state.score;
-      if (state.playerName) {
-        // Already have a name from this session — auto-save
-        document.getElementById('name-entry').style.display = 'none';
-        await saveHighScoreAuto(state.playerName, state.score);
+      if (isHighScore) {
+        state.pendingScore = state.score;
+        if (state.playerName) {
+          document.getElementById('name-entry').style.display = 'none';
+          await saveHighScoreAuto(state.playerName, state.score);
+        } else {
+          document.getElementById('name-entry').style.display = 'block';
+          const input = document.getElementById('name-input');
+          input.value = '';
+          setTimeout(() => input.focus(), 300);
+        }
       } else {
-        document.getElementById('name-entry').style.display = 'block';
-        const input = document.getElementById('name-input');
-        input.value = '';
-        setTimeout(() => input.focus(), 300);
+        document.getElementById('name-entry').style.display = 'none';
+        renderHighScores();
       }
     } else {
+      document.getElementById('new-high-score').style.display = 'none';
       document.getElementById('name-entry').style.display = 'none';
-      renderHighScores();
+      document.getElementById('high-score-section').style.display = 'none';
     }
 
     // Wrong answers list
