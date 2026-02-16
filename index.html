@@ -855,7 +855,8 @@
   }
 
   // === RESULTS ===
-  function showResults() {
+  async function showResults() {
+    await fetchHighScores();
     clearInterval(state.timerInterval);
     const totalTime = ((Date.now() - state.gameStartTime) / 1000).toFixed(1);
     const correctCount = state.results.filter(r => r.correct).length;
@@ -976,54 +977,57 @@
     setTimeout(() => container.innerHTML = '', 5000);
   }
 
-  // === HIGH SCORES ===
+  // === HIGH SCORES (shared via Cloudflare Worker API) ===
+  const API_URL = 'https://times-tables-api.cloudflarepages-585.workers.dev/api/scores';
   const MAX_HIGH_SCORES = 10;
+  let cachedScores = [];
 
-  function getHighScores() {
+  async function fetchHighScores() {
     try {
-      return JSON.parse(localStorage.getItem('tt-high-scores') || '[]');
-    } catch { return []; }
+      const res = await fetch(API_URL);
+      cachedScores = await res.json();
+    } catch { /* use cached */ }
+    return cachedScores;
   }
 
   function checkHighScore(score) {
     if (score === 0) return false;
-    const scores = getHighScores();
-    if (scores.length < MAX_HIGH_SCORES) return true;
-    return score > scores[scores.length - 1].score;
+    if (cachedScores.length < MAX_HIGH_SCORES) return true;
+    return score > cachedScores[cachedScores.length - 1].score;
   }
 
-  function saveHighScore() {
+  async function saveHighScore() {
     const input = document.getElementById('initials-input');
     let initials = input.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
     if (!initials) initials = '???';
     initials = initials.substring(0, 3).padEnd(3, '.');
 
-    const scores = getHighScores();
-    const now = new Date();
-    const dateStr = `${now.getDate()}/${now.getMonth() + 1}`;
-
-    scores.push({
-      initials,
-      score: state.pendingScore,
-      date: dateStr,
-      id: Date.now(),
-    });
-
-    scores.sort((a, b) => b.score - a.score);
-    if (scores.length > MAX_HIGH_SCORES) scores.length = MAX_HIGH_SCORES;
-
-    localStorage.setItem('tt-high-scores', JSON.stringify(scores));
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initials, score: state.pendingScore }),
+      });
+      cachedScores = await res.json();
+    } catch {
+      // Fallback: just add locally
+      cachedScores.push({ initials, score: state.pendingScore, date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
+      cachedScores.sort((a, b) => b.score - a.score);
+      if (cachedScores.length > MAX_HIGH_SCORES) cachedScores.length = MAX_HIGH_SCORES;
+    }
 
     document.getElementById('initials-entry').style.display = 'none';
     document.getElementById('high-score-section').style.display = 'block';
-    state.lastSavedId = scores.find(s => s.id === Date.now() || s.score === state.pendingScore)?.id;
     renderHighScores(state.pendingScore);
   }
 
   function renderHighScores(highlightScore) {
-    const scores = getHighScores();
-    const section = document.getElementById('high-score-section');
-    const table = document.getElementById('high-score-table');
+    renderScoreTable(cachedScores, 'high-score-table', 'high-score-section', highlightScore);
+  }
+
+  function renderScoreTable(scores, tableId, sectionId, highlightScore) {
+    const section = document.getElementById(sectionId);
+    const table = document.getElementById(tableId);
 
     if (scores.length === 0) {
       section.style.display = 'none';
@@ -1034,18 +1038,20 @@
     table.innerHTML = '';
 
     const rankEmojis = ['🥇', '🥈', '🥉'];
+    let highlighted = false;
 
     scores.forEach((entry, i) => {
       const row = document.createElement('div');
       const tier = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
-      const isYou = highlightScore && entry.score === highlightScore;
+      const isYou = !highlighted && highlightScore && entry.score === highlightScore;
+      if (isYou) highlighted = true;
       row.className = `hs-row ${tier}${isYou ? ' you' : ''}`;
 
       row.innerHTML = `
         <span class="hs-rank">${i < 3 ? rankEmojis[i] : (i + 1)}</span>
         <span class="hs-initials">${entry.initials}</span>
         <span class="hs-score">${entry.score.toLocaleString()}</span>
-        <span class="hs-date">${entry.date}</span>
+        <span class="hs-date">${entry.date || ''}</span>
       `;
       table.appendChild(row);
     });
@@ -1053,28 +1059,11 @@
 
   // === NAVIGATION ===
   function tryAgain() { startGame(); }
-  function goHome() { showScreen('home-screen'); renderHomeHighScores(); }
+  async function goHome() { showScreen('home-screen'); await renderHomeHighScores(); }
 
-  function renderHomeHighScores() {
-    const scores = getHighScores();
-    const section = document.getElementById('home-high-scores');
-    const table = document.getElementById('home-hs-table');
-    if (scores.length === 0) { section.style.display = 'none'; return; }
-    section.style.display = 'block';
-    table.innerHTML = '';
-    const rankEmojis = ['🥇', '🥈', '🥉'];
-    scores.forEach((entry, i) => {
-      const tier = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
-      const row = document.createElement('div');
-      row.className = `hs-row ${tier}`;
-      row.innerHTML = `
-        <span class="hs-rank">${i < 3 ? rankEmojis[i] : (i + 1)}</span>
-        <span class="hs-initials">${entry.initials}</span>
-        <span class="hs-score">${entry.score.toLocaleString()}</span>
-        <span class="hs-date">${entry.date}</span>
-      `;
-      table.appendChild(row);
-    });
+  async function renderHomeHighScores() {
+    await fetchHighScores();
+    renderScoreTable(cachedScores, 'home-hs-table', 'home-high-scores');
   }
 
   // Enter key for initials
@@ -1086,7 +1075,7 @@
 
   init();
   selectAll();
-  renderHomeHighScores();
+  renderHomeHighScores(); // fire-and-forget on load
 </script>
 
 </body>
