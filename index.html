@@ -386,6 +386,27 @@
     padding: 4px 0;
   }
 
+  /* === HIGH SCORE TABLE === */
+  .hs-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 1.15em;
+  }
+
+  .hs-row.gold { background: rgba(251, 191, 36, 0.15); }
+  .hs-row.silver { background: rgba(156, 163, 175, 0.1); }
+  .hs-row.bronze { background: rgba(217, 119, 6, 0.1); }
+  .hs-row.normal { background: rgba(219, 39, 119, 0.05); }
+  .hs-row.you { border: 2px solid var(--primary-light); }
+
+  .hs-rank { width: 36px; font-size: 1.3em; text-align: center; }
+  .hs-initials { width: 60px; color: var(--primary-light); font-size: 1.2em; letter-spacing: 2px; }
+  .hs-score { flex: 1; text-align: right; color: var(--text); font-size: 1.2em; }
+  .hs-date { width: 70px; text-align: right; color: var(--text-dim); font-size: 0.8em; }
+
   .exit-btn {
     font-family: 'Patrick Hand', cursive;
     font-size: 1em;
@@ -437,6 +458,11 @@
   </div>
 
   <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start!</button>
+
+  <div id="home-high-scores" class="results-card" style="display:none; margin-top: 20px;">
+    <h2 style="text-align:center; margin-bottom: 12px; color: #fbbf24;">High Scores</h2>
+    <div id="home-hs-table"></div>
+  </div>
 </div>
 
 <!-- ========== GAME SCREEN ========== -->
@@ -469,15 +495,18 @@
 
   <div class="results-card">
     <div class="score-big" id="results-score"></div>
+    <div id="new-high-score" style="display:none; text-align:center; margin: 5px 0;">
+      <span style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a0a14; padding: 4px 16px; border-radius: 20px; font-size: 1.1em;">NEW HIGH SCORE!</span>
+    </div>
     <div id="speed-badge-container"></div>
     <div class="stat-grid">
       <div class="stat-box">
-        <div class="value" id="stat-points">0</div>
-        <div class="label">Points</div>
-      </div>
-      <div class="stat-box">
         <div class="value" id="stat-correct">0</div>
         <div class="label">Correct</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="stat-pct">0%</div>
+        <div class="label">Accuracy</div>
       </div>
       <div class="stat-box">
         <div class="value" id="stat-time">0s</div>
@@ -488,6 +517,23 @@
         <div class="label">Avg Speed</div>
       </div>
     </div>
+  </div>
+
+  <!-- HIGH SCORE INITIALS -->
+  <div id="initials-entry" style="display:none; text-align:center; margin-bottom: 15px;">
+    <p style="font-size: 1.2em; color: var(--primary-light); margin-bottom: 10px;">Enter your initials:</p>
+    <input type="text" id="initials-input" maxlength="3" autocomplete="off" autocapitalize="characters"
+      style="font-family: 'Patrick Hand', cursive; font-size: 2em; width: 100px; text-align: center; text-transform: uppercase;
+      border: 3px solid var(--primary); border-radius: 12px; background: var(--card); color: var(--primary-light);
+      padding: 8px; outline: none; letter-spacing: 6px;">
+    <br>
+    <button class="btn btn-primary" style="margin-top: 10px; min-width: 150px;" onclick="saveHighScore()">Save</button>
+  </div>
+
+  <!-- HIGH SCORE TABLE -->
+  <div id="high-score-section" class="results-card" style="display:none;">
+    <h2 style="text-align:center; margin-bottom: 12px; color: #fbbf24;">High Scores</h2>
+    <div id="high-score-table"></div>
   </div>
 
   <div class="wrong-answers-list" id="wrong-list"></div>
@@ -826,32 +872,31 @@
     const stars = document.getElementById('results-stars');
     const scoreEl = document.getElementById('results-score');
 
+    // Score is the star of the show
+    scoreEl.textContent = state.score.toLocaleString();
+
     if (pct === 100) {
       title.textContent = 'Perfect Score!';
       stars.textContent = '\u2B50\u2B50\u2B50';
-      scoreEl.textContent = pct + '%';
       scoreEl.className = 'score-big gold';
       launchCelebration();
     } else if (pct >= 80) {
       title.textContent = 'Great Job!';
       stars.textContent = '\u2B50\u2B50';
-      scoreEl.textContent = pct + '%';
       scoreEl.className = 'score-big silver';
       launchCelebration();
     } else if (pct >= 60) {
       title.textContent = 'Good Effort!';
       stars.textContent = '\u2B50';
-      scoreEl.textContent = pct + '%';
       scoreEl.className = 'score-big bronze';
     } else {
       title.textContent = 'Keep Practising!';
       stars.textContent = '';
-      scoreEl.textContent = pct + '%';
       scoreEl.className = 'score-big needs-work';
     }
 
-    document.getElementById('stat-points').textContent = state.score;
     document.getElementById('stat-correct').textContent = `${correctCount}/${state.results.length}`;
+    document.getElementById('stat-pct').textContent = pct + '%';
     document.getElementById('stat-time').textContent = totalTime + 's';
     document.getElementById('stat-avg').textContent = avgTime + 's';
 
@@ -868,6 +913,21 @@
       badgeContainer.innerHTML = '<span class="speed-badge slow">Take Your Time</span>';
     }
     badgeContainer.style.textAlign = 'center';
+
+    // Check high scores
+    const isHighScore = checkHighScore(state.score);
+    document.getElementById('new-high-score').style.display = isHighScore ? 'block' : 'none';
+    document.getElementById('initials-entry').style.display = isHighScore ? 'block' : 'none';
+    document.getElementById('high-score-section').style.display = isHighScore ? 'none' : 'block';
+
+    if (isHighScore) {
+      state.pendingScore = state.score;
+      const input = document.getElementById('initials-input');
+      input.value = '';
+      setTimeout(() => input.focus(), 300);
+    } else {
+      renderHighScores();
+    }
 
     // Wrong answers list
     const wrongList = document.getElementById('wrong-list');
@@ -916,12 +976,117 @@
     setTimeout(() => container.innerHTML = '', 5000);
   }
 
+  // === HIGH SCORES ===
+  const MAX_HIGH_SCORES = 10;
+
+  function getHighScores() {
+    try {
+      return JSON.parse(localStorage.getItem('tt-high-scores') || '[]');
+    } catch { return []; }
+  }
+
+  function checkHighScore(score) {
+    if (score === 0) return false;
+    const scores = getHighScores();
+    if (scores.length < MAX_HIGH_SCORES) return true;
+    return score > scores[scores.length - 1].score;
+  }
+
+  function saveHighScore() {
+    const input = document.getElementById('initials-input');
+    let initials = input.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
+    if (!initials) initials = '???';
+    initials = initials.substring(0, 3).padEnd(3, '.');
+
+    const scores = getHighScores();
+    const now = new Date();
+    const dateStr = `${now.getDate()}/${now.getMonth() + 1}`;
+
+    scores.push({
+      initials,
+      score: state.pendingScore,
+      date: dateStr,
+      id: Date.now(),
+    });
+
+    scores.sort((a, b) => b.score - a.score);
+    if (scores.length > MAX_HIGH_SCORES) scores.length = MAX_HIGH_SCORES;
+
+    localStorage.setItem('tt-high-scores', JSON.stringify(scores));
+
+    document.getElementById('initials-entry').style.display = 'none';
+    document.getElementById('high-score-section').style.display = 'block';
+    state.lastSavedId = scores.find(s => s.id === Date.now() || s.score === state.pendingScore)?.id;
+    renderHighScores(state.pendingScore);
+  }
+
+  function renderHighScores(highlightScore) {
+    const scores = getHighScores();
+    const section = document.getElementById('high-score-section');
+    const table = document.getElementById('high-score-table');
+
+    if (scores.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    table.innerHTML = '';
+
+    const rankEmojis = ['🥇', '🥈', '🥉'];
+
+    scores.forEach((entry, i) => {
+      const row = document.createElement('div');
+      const tier = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
+      const isYou = highlightScore && entry.score === highlightScore;
+      row.className = `hs-row ${tier}${isYou ? ' you' : ''}`;
+
+      row.innerHTML = `
+        <span class="hs-rank">${i < 3 ? rankEmojis[i] : (i + 1)}</span>
+        <span class="hs-initials">${entry.initials}</span>
+        <span class="hs-score">${entry.score.toLocaleString()}</span>
+        <span class="hs-date">${entry.date}</span>
+      `;
+      table.appendChild(row);
+    });
+  }
+
   // === NAVIGATION ===
   function tryAgain() { startGame(); }
-  function goHome() { showScreen('home-screen'); }
+  function goHome() { showScreen('home-screen'); renderHomeHighScores(); }
+
+  function renderHomeHighScores() {
+    const scores = getHighScores();
+    const section = document.getElementById('home-high-scores');
+    const table = document.getElementById('home-hs-table');
+    if (scores.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    table.innerHTML = '';
+    const rankEmojis = ['🥇', '🥈', '🥉'];
+    scores.forEach((entry, i) => {
+      const tier = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
+      const row = document.createElement('div');
+      row.className = `hs-row ${tier}`;
+      row.innerHTML = `
+        <span class="hs-rank">${i < 3 ? rankEmojis[i] : (i + 1)}</span>
+        <span class="hs-initials">${entry.initials}</span>
+        <span class="hs-score">${entry.score.toLocaleString()}</span>
+        <span class="hs-date">${entry.date}</span>
+      `;
+      table.appendChild(row);
+    });
+  }
+
+  // Enter key for initials
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.getElementById('initials-entry').style.display !== 'none') {
+      saveHighScore();
+    }
+  });
 
   init();
   selectAll();
+  renderHomeHighScores();
 </script>
 
 </body>
