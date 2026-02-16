@@ -472,12 +472,12 @@
     <div id="speed-badge-container"></div>
     <div class="stat-grid">
       <div class="stat-box">
-        <div class="value" id="stat-correct">0</div>
-        <div class="label">Correct</div>
+        <div class="value" id="stat-points">0</div>
+        <div class="label">Points</div>
       </div>
       <div class="stat-box">
-        <div class="value" id="stat-wrong">0</div>
-        <div class="label">Wrong</div>
+        <div class="value" id="stat-correct">0</div>
+        <div class="label">Correct</div>
       </div>
       <div class="stat-box">
         <div class="value" id="stat-time">0s</div>
@@ -749,16 +749,27 @@
     const feedback = document.getElementById('feedback');
 
     if (correct) {
-      state.score++;
+      // Points: 10 base + speed bonus (max 10 for <1.5s, scaling down to 0 at 8s+)
+      let speedBonus = 0;
+      if (timeTaken < 1.5) speedBonus = 10;
+      else if (timeTaken < 3) speedBonus = 7;
+      else if (timeTaken < 5) speedBonus = 4;
+      else if (timeTaken < 8) speedBonus = 2;
+      // Streak multiplier: x1.5 at 3+, x2 at 5+
+      let streakMult = 1;
+      if (state.streak >= 4) streakMult = 2;
+      else if (state.streak >= 2) streakMult = 1.5;
+      const points = Math.round((10 + speedBonus) * streakMult);
+      state.score += points;
       state.streak++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       btnEl.classList.add('correct');
       feedback.className = 'feedback correct';
 
-      if (timeTaken < 2) feedback.textContent = 'Lightning fast!';
-      else if (timeTaken < 3) feedback.textContent = 'Super quick!';
-      else if (timeTaken < 5) feedback.textContent = 'Great!';
-      else feedback.textContent = 'Correct!';
+      if (timeTaken < 1.5) feedback.textContent = `Lightning! +${points}`;
+      else if (timeTaken < 3) feedback.textContent = `Super quick! +${points}`;
+      else if (timeTaken < 5) feedback.textContent = `Great! +${points}`;
+      else feedback.textContent = `Correct! +${points}`;
     } else {
       state.streak = 0;
       btnEl.classList.add('wrong');
@@ -804,6 +815,8 @@
     const correctCount = state.results.filter(r => r.correct).length;
     const wrongCount = state.results.length - correctCount;
     const pct = Math.round((correctCount / state.results.length) * 100);
+    // Max possible score: every question lightning + max streak
+    const maxScore = state.results.length * 20 * 2; // 20pts * x2 streak
 
     const avgTime = state.results.length > 0
       ? (state.results.reduce((sum, r) => sum + r.time, 0) / state.results.length).toFixed(1)
@@ -837,8 +850,8 @@
       scoreEl.className = 'score-big needs-work';
     }
 
-    document.getElementById('stat-correct').textContent = correctCount;
-    document.getElementById('stat-wrong').textContent = wrongCount;
+    document.getElementById('stat-points').textContent = state.score;
+    document.getElementById('stat-correct').textContent = `${correctCount}/${state.results.length}`;
     document.getElementById('stat-time').textContent = totalTime + 's';
     document.getElementById('stat-avg').textContent = avgTime + 's';
 
