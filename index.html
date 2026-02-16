@@ -11,15 +11,15 @@
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   :root {
-    --primary: #7c3aed;
-    --primary-light: #a78bfa;
+    --primary: #db2777;
+    --primary-light: #f472b6;
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
-    --bg: #0f0a1a;
-    --card: #1a1128;
-    --text: #f0e6ff;
-    --text-dim: #9f8fbf;
+    --bg: #1a0a14;
+    --card: #2a1020;
+    --text: #ffe6f0;
+    --text-dim: #bf8fa0;
   }
 
   body {
@@ -126,7 +126,7 @@
 
   .btn:active { transform: scale(0.95); }
 
-  .btn-primary { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+  .btn-primary { background: linear-gradient(135deg, #ec4899, #db2777); }
   .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
   .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
   .btn-secondary { background: linear-gradient(135deg, #6b7280, #4b5563); }
@@ -147,7 +147,7 @@
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    background: linear-gradient(90deg, #ec4899, #f9a8d4);
     border-radius: 4px;
     transition: width 0.3s;
   }
@@ -275,7 +275,7 @@
   }
 
   .stat-box {
-    background: rgba(124, 58, 237, 0.15);
+    background: rgba(219, 39, 119, 0.15);
     border-radius: 12px;
     padding: 12px;
     text-align: center;
@@ -921,6 +921,7 @@
   function goHome() { showScreen('home-screen'); }
 
   init();
+  selectAll();
 </script>
 
 </body>
