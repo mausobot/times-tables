@@ -70,10 +70,15 @@ async function addScore(request, env) {
   const data = await env.SCORES.get(KV_KEY, 'json');
   const scores = data || [];
 
+  const questions = typeof body.questions === 'number' ? body.questions : null;
+  const tables = Array.isArray(body.tables) ? body.tables.map(Number).filter(n => n >= 2 && n <= 12) : null;
+
   const now = new Date();
   scores.push({
     name: playerName,
     score: Math.round(score),
+    questions,
+    tables,
     date: `${now.getDate()}/${now.getMonth() + 1}`,
     ts: now.getTime(),
   });

@@ -404,6 +404,7 @@
 
   .hs-rank { width: 36px; font-size: 1.3em; text-align: center; }
   .hs-name { flex: 1; color: var(--primary-light); font-size: 1.1em; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hs-detail { font-size: 0.7em; color: var(--text-dim); }
   .hs-score { width: 70px; text-align: right; color: var(--text); font-size: 1.2em; }
   .hs-date { width: 70px; text-align: right; color: var(--text-dim); font-size: 0.8em; }
 
@@ -1016,11 +1017,11 @@
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, score: state.pendingScore }),
+        body: JSON.stringify({ name, score: state.pendingScore, questions: state.questionCount, tables: [...state.selectedTables].sort((a,b)=>a-b) }),
       });
       cachedScores = await res.json();
     } catch {
-      cachedScores.push({ name, score: state.pendingScore, date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
+      cachedScores.push({ name, score: state.pendingScore, questions: state.questionCount, tables: [...state.selectedTables].sort((a,b)=>a-b), date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
       cachedScores.sort((a, b) => b.score - a.score);
       if (cachedScores.length > MAX_HIGH_SCORES) cachedScores.length = MAX_HIGH_SCORES;
     }
@@ -1035,11 +1036,11 @@
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, score }),
+        body: JSON.stringify({ name, score, questions: state.questionCount, tables: [...state.selectedTables].sort((a,b)=>a-b) }),
       });
       cachedScores = await res.json();
     } catch {
-      cachedScores.push({ name, score, date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
+      cachedScores.push({ name, score, questions: state.questionCount, tables: [...state.selectedTables].sort((a,b)=>a-b), date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
       cachedScores.sort((a, b) => b.score - a.score);
       if (cachedScores.length > MAX_HIGH_SCORES) cachedScores.length = MAX_HIGH_SCORES;
     }
@@ -1073,9 +1074,11 @@
       if (isYou) highlighted = true;
       row.className = `hs-row ${tier}${isYou ? ' you' : ''}`;
 
+      const tablesStr = entry.tables ? entry.tables.join(',') : '';
+      const detail = [entry.questions ? entry.questions + 'q' : '', tablesStr ? '\u00d7' + tablesStr : ''].filter(Boolean).join(' ');
       row.innerHTML = `
         <span class="hs-rank">${i < 3 ? rankEmojis[i] : (i + 1)}</span>
-        <span class="hs-name">${entry.name || entry.initials || '???'}</span>
+        <span class="hs-name">${entry.name || entry.initials || '???'}${detail ? '<br><span class="hs-detail">' + detail + '</span>' : ''}</span>
         <span class="hs-score">${entry.score.toLocaleString()}</span>
         <span class="hs-date">${entry.date || ''}</span>
       `;
