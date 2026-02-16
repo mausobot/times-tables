@@ -51,11 +51,11 @@ async function addScore(request, env) {
     });
   }
 
-  const { initials, score } = body;
+  const { name, initials, score } = body;
+  const playerName = (name || initials || '').toString().trim().substring(0, 15);
 
-  // Validate
-  if (!initials || typeof initials !== 'string' || initials.length > 3) {
-    return new Response(JSON.stringify({ error: 'Invalid initials' }), {
+  if (!playerName) {
+    return new Response(JSON.stringify({ error: 'Invalid name' }), {
       status: 400,
       headers: CORS_HEADERS,
     });
@@ -67,14 +67,12 @@ async function addScore(request, env) {
     });
   }
 
-  const cleanInitials = initials.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 3).padEnd(3, '.');
-
   const data = await env.SCORES.get(KV_KEY, 'json');
   const scores = data || [];
 
   const now = new Date();
   scores.push({
-    initials: cleanInitials,
+    name: playerName,
     score: Math.round(score),
     date: `${now.getDate()}/${now.getMonth() + 1}`,
     ts: now.getTime(),

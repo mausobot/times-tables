@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Times Tables Challenge</title>
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -23,7 +23,7 @@
   }
 
   body {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100dvh;
@@ -52,7 +52,7 @@
   }
 
   .table-btn {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1.4em;
     padding: 14px 0;
     border: 2px solid var(--primary);
@@ -88,7 +88,7 @@
   .settings-row label { color: var(--text-dim); }
 
   .qty-select {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1.4em;
     padding: 8px 16px;
     border: 2px solid var(--primary);
@@ -112,7 +112,7 @@
 
   /* === BUTTONS === */
   .btn {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1.4em;
     padding: 14px 40px;
     border: none;
@@ -186,7 +186,7 @@
   }
 
   .choice-btn {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1.8em;
     padding: 16px 0;
     border: 3px solid var(--primary);
@@ -352,7 +352,7 @@
 
   .mode-option {
     flex: 1;
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1.15em;
     padding: 12px;
     background: var(--card);
@@ -376,7 +376,7 @@
   }
 
   .select-link {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1.05em;
     color: var(--primary-light);
     background: none;
@@ -403,12 +403,12 @@
   .hs-row.you { border: 2px solid var(--primary-light); }
 
   .hs-rank { width: 36px; font-size: 1.3em; text-align: center; }
-  .hs-initials { width: 60px; color: var(--primary-light); font-size: 1.2em; letter-spacing: 2px; }
-  .hs-score { flex: 1; text-align: right; color: var(--text); font-size: 1.2em; }
+  .hs-name { flex: 1; color: var(--primary-light); font-size: 1.1em; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hs-score { width: 70px; text-align: right; color: var(--text); font-size: 1.2em; }
   .hs-date { width: 70px; text-align: right; color: var(--text-dim); font-size: 0.8em; }
 
   .exit-btn {
-    font-family: 'Patrick Hand', cursive;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1em;
     padding: 8px 20px;
     min-width: auto;
@@ -519,13 +519,13 @@
     </div>
   </div>
 
-  <!-- HIGH SCORE INITIALS -->
-  <div id="initials-entry" style="display:none; text-align:center; margin-bottom: 15px;">
-    <p style="font-size: 1.2em; color: var(--primary-light); margin-bottom: 10px;">Enter your initials:</p>
-    <input type="text" id="initials-input" maxlength="3" autocomplete="off" autocapitalize="characters"
-      style="font-family: 'Patrick Hand', cursive; font-size: 2em; width: 100px; text-align: center; text-transform: uppercase;
+  <!-- HIGH SCORE NAME ENTRY -->
+  <div id="name-entry" style="display:none; text-align:center; margin-bottom: 15px;">
+    <p style="font-size: 1.2em; color: var(--primary-light); margin-bottom: 10px;">Enter your name:</p>
+    <input type="text" id="name-input" maxlength="15" autocomplete="off" autocapitalize="words"
+      style="font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif; font-size: 1.5em; width: 220px; text-align: center;
       border: 3px solid var(--primary); border-radius: 12px; background: var(--card); color: var(--primary-light);
-      padding: 8px; outline: none; letter-spacing: 6px;">
+      padding: 10px; outline: none;">
     <br>
     <button class="btn btn-primary" style="margin-top: 10px; min-width: 150px;" onclick="saveHighScore()">Save</button>
   </div>
@@ -918,15 +918,22 @@
     // Check high scores
     const isHighScore = checkHighScore(state.score);
     document.getElementById('new-high-score').style.display = isHighScore ? 'block' : 'none';
-    document.getElementById('initials-entry').style.display = isHighScore ? 'block' : 'none';
     document.getElementById('high-score-section').style.display = isHighScore ? 'none' : 'block';
 
     if (isHighScore) {
       state.pendingScore = state.score;
-      const input = document.getElementById('initials-input');
-      input.value = '';
-      setTimeout(() => input.focus(), 300);
+      if (state.playerName) {
+        // Already have a name from this session — auto-save
+        document.getElementById('name-entry').style.display = 'none';
+        await saveHighScoreAuto(state.playerName, state.score);
+      } else {
+        document.getElementById('name-entry').style.display = 'block';
+        const input = document.getElementById('name-input');
+        input.value = '';
+        setTimeout(() => input.focus(), 300);
+      }
     } else {
+      document.getElementById('name-entry').style.display = 'none';
       renderHighScores();
     }
 
@@ -997,28 +1004,47 @@
   }
 
   async function saveHighScore() {
-    const input = document.getElementById('initials-input');
-    let initials = input.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
-    if (!initials) initials = '???';
-    initials = initials.substring(0, 3).padEnd(3, '.');
+    const input = document.getElementById('name-input');
+    let name = input.value.trim();
+    if (!name) name = '???';
+    name = name.substring(0, 15);
+
+    // Remember name for this session
+    state.playerName = name;
 
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initials, score: state.pendingScore }),
+        body: JSON.stringify({ name, score: state.pendingScore }),
       });
       cachedScores = await res.json();
     } catch {
-      // Fallback: just add locally
-      cachedScores.push({ initials, score: state.pendingScore, date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
+      cachedScores.push({ name, score: state.pendingScore, date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
       cachedScores.sort((a, b) => b.score - a.score);
       if (cachedScores.length > MAX_HIGH_SCORES) cachedScores.length = MAX_HIGH_SCORES;
     }
 
-    document.getElementById('initials-entry').style.display = 'none';
+    document.getElementById('name-entry').style.display = 'none';
     document.getElementById('high-score-section').style.display = 'block';
     renderHighScores(state.pendingScore);
+  }
+
+  async function saveHighScoreAuto(name, score) {
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, score }),
+      });
+      cachedScores = await res.json();
+    } catch {
+      cachedScores.push({ name, score, date: new Date().getDate() + '/' + (new Date().getMonth()+1) });
+      cachedScores.sort((a, b) => b.score - a.score);
+      if (cachedScores.length > MAX_HIGH_SCORES) cachedScores.length = MAX_HIGH_SCORES;
+    }
+    document.getElementById('high-score-section').style.display = 'block';
+    renderHighScores(score);
   }
 
   function renderHighScores(highlightScore) {
@@ -1049,7 +1075,7 @@
 
       row.innerHTML = `
         <span class="hs-rank">${i < 3 ? rankEmojis[i] : (i + 1)}</span>
-        <span class="hs-initials">${entry.initials}</span>
+        <span class="hs-name">${entry.name || entry.initials || '???'}</span>
         <span class="hs-score">${entry.score.toLocaleString()}</span>
         <span class="hs-date">${entry.date || ''}</span>
       `;
@@ -1068,7 +1094,7 @@
 
   // Enter key for initials
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && document.getElementById('initials-entry').style.display !== 'none') {
+    if (e.key === 'Enter' && document.getElementById('name-entry').style.display !== 'none') {
       saveHighScore();
     }
   });
