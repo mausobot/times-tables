@@ -120,6 +120,7 @@
     transition: all 0.2s;
     color: white;
     min-width: 200px;
+    text-align: center;
   }
 
   .btn:active { transform: scale(0.95); }
@@ -154,14 +155,14 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-size: 1.1em;
     color: var(--text-dim);
   }
 
   .question-area {
     text-align: center;
-    margin: 20px 0;
+    margin: 10px 0;
     width: 100%;
   }
 
@@ -174,23 +175,54 @@
 
   .question-text .operator { color: var(--primary-light); }
 
-  .answer-input {
+  /* === MULTIPLE CHOICE === */
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .choice-btn {
     font-family: 'Patrick Hand', cursive;
-    font-size: 2.4em;
-    width: 140px;
-    padding: 10px;
-    text-align: center;
+    font-size: 1.8em;
+    padding: 16px 0;
     border: 3px solid var(--primary);
     border-radius: 14px;
     background: var(--card);
     color: var(--text);
-    outline: none;
-    caret-color: var(--primary-light);
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  .answer-input:focus { border-color: var(--primary-light); box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
-  .answer-input.correct { border-color: var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
-  .answer-input.wrong { border-color: var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); animation: shake 0.4s; }
+  .choice-btn:active:not(.disabled) { transform: scale(0.95); }
+
+  .choice-btn.correct {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.25);
+    color: var(--success);
+  }
+
+  .choice-btn.wrong {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.25);
+    color: var(--danger);
+    animation: shake 0.4s;
+  }
+
+  .choice-btn.reveal-correct {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+  }
+
+  .choice-btn.disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
 
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
@@ -201,13 +233,13 @@
   .timer {
     font-size: 1.8em;
     color: var(--warning);
-    margin-top: 15px;
+    margin-top: 10px;
   }
 
   .feedback {
-    font-size: 1.6em;
-    margin-top: 15px;
-    min-height: 40px;
+    font-size: 1.5em;
+    margin-top: 10px;
+    min-height: 36px;
     transition: all 0.2s;
   }
 
@@ -270,7 +302,6 @@
   .wrong-item .your-ans { color: var(--danger); text-decoration: line-through; }
   .wrong-item .correct-ans { color: var(--success); }
 
-  /* === STARS === */
   .stars { font-size: 2.5em; text-align: center; margin: 10px 0; }
 
   /* === CELEBRATION === */
@@ -294,7 +325,6 @@
     100% { transform: translateY(100dvh) rotate(720deg); opacity: 0; }
   }
 
-  /* === SPEED BADGE === */
   .speed-badge {
     display: inline-block;
     padding: 4px 12px;
@@ -337,7 +367,6 @@
     color: white;
   }
 
-  /* === SELECT ALL === */
   .select-row {
     display: flex;
     gap: 10px;
@@ -355,6 +384,21 @@
     text-decoration: underline;
     padding: 4px 0;
   }
+
+  .exit-btn {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1em;
+    padding: 8px 20px;
+    min-width: auto;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    margin-top: 10px;
+  }
+
+  .exit-btn:active { transform: scale(0.95); }
 </style>
 </head>
 <body>
@@ -364,7 +408,6 @@
   <h1>Times Tables Challenge</h1>
   <p class="subtitle">Pick your tables and start the challenge!</p>
 
-  <!-- Mode Toggle -->
   <div class="mode-toggle">
     <button class="mode-option active" data-mode="test" onclick="setMode('test')">Timed Test</button>
     <button class="mode-option" data-mode="practice" onclick="setMode('practice')">Practice</button>
@@ -397,21 +440,17 @@
   </div>
 
   <div class="question-area">
-    <div class="question-text" id="question-text">
-      <span id="q-a">3</span> <span class="operator">&times;</span> <span id="q-b">7</span> <span class="operator">=</span>
+    <div class="question-text">
+      <span id="q-a">3</span> <span class="operator">&times;</span> <span id="q-b">7</span> <span class="operator">= ?</span>
     </div>
-    <input type="number" inputmode="numeric" pattern="[0-9]*" class="answer-input" id="answer-input" autocomplete="off">
+
+    <div class="choices-grid" id="choices-grid"></div>
+
     <div class="timer" id="timer-display"></div>
     <div class="feedback" id="feedback"></div>
   </div>
 
-  <div class="btn-row">
-    <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">Go!</button>
-    <button class="btn btn-secondary" onclick="skipQuestion()">Skip</button>
-  </div>
-  <div class="btn-row" style="margin-top: 10px;">
-    <button class="btn btn-danger" onclick="quitGame()" style="font-size: 1em; padding: 8px 20px; min-width: auto;">Exit</button>
-  </div>
+  <button class="exit-btn" onclick="quitGame()">Exit</button>
 </div>
 
 <!-- ========== RESULTS SCREEN ========== -->
@@ -421,6 +460,7 @@
 
   <div class="results-card">
     <div class="score-big" id="results-score"></div>
+    <div id="speed-badge-container"></div>
     <div class="stat-grid">
       <div class="stat-box">
         <div class="value" id="stat-correct">0</div>
@@ -449,7 +489,6 @@
   </div>
 </div>
 
-<!-- Celebration container -->
 <div class="celebration" id="celebration"></div>
 
 <script>
@@ -457,7 +496,7 @@
   const state = {
     selectedTables: new Set(),
     questionCount: 10,
-    mode: 'test', // 'test' or 'practice'
+    mode: 'test',
     questions: [],
     currentQ: 0,
     score: 0,
@@ -467,12 +506,14 @@
     gameStartTime: 0,
     questionStartTime: 0,
     timerInterval: null,
+    answering: false,
   };
 
   // === INIT ===
   function init() {
     const grid = document.getElementById('table-grid');
-    for (let i = 1; i <= 12; i++) {
+    // Start from 2 (skip 1)
+    for (let i = 2; i <= 12; i++) {
       const btn = document.createElement('button');
       btn.className = 'table-btn';
       btn.textContent = i;
@@ -526,30 +567,105 @@
     document.getElementById('qty-display').textContent = state.questionCount;
   }
 
+  // === GENERATE PLAUSIBLE WRONG ANSWERS ===
+  function generateDistractors(a, b, correctAnswer) {
+    const distractors = new Set();
+
+    // Strategy 1: Off-by-one on one factor (e.g., 7x6 instead of 7x7)
+    // These are the hardest to distinguish — adjacent multiples
+    for (let delta = -2; delta <= 2; delta++) {
+      if (delta === 0) continue;
+      const v1 = a * (b + delta);
+      const v2 = (a + delta) * b;
+      if (v1 > 0 && v1 !== correctAnswer) distractors.add(v1);
+      if (v2 > 0 && v2 !== correctAnswer) distractors.add(v2);
+    }
+
+    // Strategy 2: Swap digits of answer (e.g., 54 -> 45)
+    if (correctAnswer >= 10) {
+      const s = String(correctAnswer);
+      const swapped = parseInt(s.split('').reverse().join(''));
+      if (swapped !== correctAnswer && swapped > 0) distractors.add(swapped);
+    }
+
+    // Strategy 3: Common confusion — same digits, different table
+    // e.g., for 6x8=48, offer 6x9=54, 7x8=56
+    for (let i = 2; i <= 12; i++) {
+      if (i === b) continue;
+      const v = a * i;
+      if (v !== correctAnswer && v > 0) distractors.add(v);
+    }
+    for (let i = 2; i <= 12; i++) {
+      if (i === a) continue;
+      const v = i * b;
+      if (v !== correctAnswer && v > 0) distractors.add(v);
+    }
+
+    // Strategy 4: Off by the factor itself (double-counted or missed one group)
+    const v1 = correctAnswer + a;
+    const v2 = correctAnswer - a;
+    const v3 = correctAnswer + b;
+    const v4 = correctAnswer - b;
+    [v1, v2, v3, v4].forEach(v => {
+      if (v > 0 && v !== correctAnswer) distractors.add(v);
+    });
+
+    // Convert to array and sort by "closeness" to correct answer
+    // Prefer distractors that are close — makes it harder
+    let arr = [...distractors].filter(d => d > 0);
+    arr.sort((x, y) => Math.abs(x - correctAnswer) - Math.abs(y - correctAnswer));
+
+    // Pick 5 distractors, preferring close ones but mixing in a couple further away
+    const picked = [];
+    // Take the 3 closest
+    const close = arr.slice(0, Math.min(4, arr.length));
+    picked.push(...close);
+    // Add 1-2 from further away for variety
+    const far = arr.slice(4);
+    for (let i = 0; i < 2 && i < far.length; i++) {
+      picked.push(far[i]);
+    }
+
+    // If we still don't have 5, generate more
+    while (picked.length < 5) {
+      // Small random offset
+      const offset = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 3) + 1);
+      const v = correctAnswer + offset;
+      if (v > 0 && v !== correctAnswer && !picked.includes(v)) {
+        picked.push(v);
+      }
+    }
+
+    return picked.slice(0, 5);
+  }
+
   // === GENERATE QUESTIONS ===
   function generateQuestions() {
     const tables = [...state.selectedTables];
     const pool = [];
     for (const t of tables) {
-      for (let i = 1; i <= 12; i++) {
+      // Skip x1 — start from 2
+      for (let i = 2; i <= 12; i++) {
         pool.push([t, i]);
       }
     }
 
-    // Shuffle and pick
     const questions = [];
     const shuffled = pool.sort(() => Math.random() - 0.5);
     for (let i = 0; i < state.questionCount; i++) {
       const pair = shuffled[i % shuffled.length];
-      // Randomly swap order for variety
-      if (Math.random() > 0.5) {
-        questions.push({ a: pair[0], b: pair[1], answer: pair[0] * pair[1] });
-      } else {
-        questions.push({ a: pair[1], b: pair[0], answer: pair[0] * pair[1] });
-      }
+      let a = pair[0], b = pair[1];
+      // Randomly swap order
+      if (Math.random() > 0.5) [a, b] = [b, a];
+      const answer = a * b;
+
+      const distractors = generateDistractors(a, b, answer);
+      // Build 6 choices: correct + 5 distractors, shuffled
+      const choices = [answer, ...distractors].sort(() => Math.random() - 0.5);
+
+      questions.push({ a, b, answer, choices });
     }
 
-    // Extra shuffle
     return questions.sort(() => Math.random() - 0.5);
   }
 
@@ -573,6 +689,7 @@
   }
 
   function showQuestion() {
+    state.answering = false;
     const q = state.questions[state.currentQ];
     document.getElementById('q-a').textContent = q.a;
     document.getElementById('q-b').textContent = q.b;
@@ -585,17 +702,20 @@
     const pct = (state.currentQ / state.questions.length) * 100;
     document.getElementById('progress-fill').style.width = pct + '%';
 
-    const input = document.getElementById('answer-input');
-    input.value = '';
-    input.className = 'answer-input';
-    input.disabled = false;
-    input.focus();
-
-    document.getElementById('submit-btn').disabled = false;
+    // Render choices
+    const grid = document.getElementById('choices-grid');
+    grid.innerHTML = '';
+    // Use 3 rows x 2 cols for 6 choices
+    for (const choice of q.choices) {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choice;
+      btn.addEventListener('click', () => pickAnswer(choice, btn));
+      grid.appendChild(btn);
+    }
 
     state.questionStartTime = Date.now();
 
-    // Timer display
     if (state.mode === 'test') {
       updateTimer();
       clearInterval(state.timerInterval);
@@ -610,19 +730,17 @@
     document.getElementById('timer-display').textContent = elapsed + 's';
   }
 
-  function submitAnswer() {
-    const input = document.getElementById('answer-input');
-    const val = input.value.trim();
-    if (val === '') return;
+  function pickAnswer(choice, btnEl) {
+    if (state.answering) return;
+    state.answering = true;
 
     clearInterval(state.timerInterval);
     const timeTaken = (Date.now() - state.questionStartTime) / 1000;
     const q = state.questions[state.currentQ];
-    const userAnswer = parseInt(val);
-    const correct = userAnswer === q.answer;
+    const correct = choice === q.answer;
 
-    input.disabled = true;
-    document.getElementById('submit-btn').disabled = true;
+    // Disable all choice buttons
+    document.querySelectorAll('.choice-btn').forEach(b => b.classList.add('disabled'));
 
     const feedback = document.getElementById('feedback');
 
@@ -630,31 +748,36 @@
       state.score++;
       state.streak++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-      input.className = 'answer-input correct';
+      btnEl.classList.add('correct');
       feedback.className = 'feedback correct';
 
-      // Speed-based feedback
       if (timeTaken < 2) feedback.textContent = 'Lightning fast!';
-      else if (timeTaken < 4) feedback.textContent = 'Great!';
-      else if (timeTaken < 6) feedback.textContent = 'Good job!';
+      else if (timeTaken < 3) feedback.textContent = 'Super quick!';
+      else if (timeTaken < 5) feedback.textContent = 'Great!';
       else feedback.textContent = 'Correct!';
     } else {
       state.streak = 0;
-      input.className = 'answer-input wrong';
+      btnEl.classList.add('wrong');
       feedback.className = 'feedback wrong';
-      feedback.textContent = `${q.a} x ${q.b} = ${q.answer}`;
+      feedback.textContent = `${q.a} \u00d7 ${q.b} = ${q.answer}`;
+
+      // Highlight the correct answer
+      document.querySelectorAll('.choice-btn').forEach(b => {
+        if (parseInt(b.textContent) === q.answer) {
+          b.classList.add('reveal-correct');
+        }
+      });
     }
 
     state.results.push({
       a: q.a,
       b: q.b,
       answer: q.answer,
-      userAnswer,
+      userAnswer: choice,
       correct,
       time: timeTaken,
     });
 
-    // Auto-advance
     setTimeout(() => {
       state.currentQ++;
       if (state.currentQ < state.questions.length) {
@@ -662,36 +785,7 @@
       } else {
         showResults();
       }
-    }, correct ? 800 : 2000);
-  }
-
-  function skipQuestion() {
-    clearInterval(state.timerInterval);
-    const q = state.questions[state.currentQ];
-    const timeTaken = (Date.now() - state.questionStartTime) / 1000;
-
-    state.streak = 0;
-    state.results.push({
-      a: q.a,
-      b: q.b,
-      answer: q.answer,
-      userAnswer: null,
-      correct: false,
-      time: timeTaken,
-    });
-
-    const feedback = document.getElementById('feedback');
-    feedback.className = 'feedback wrong';
-    feedback.textContent = `${q.a} x ${q.b} = ${q.answer}`;
-
-    setTimeout(() => {
-      state.currentQ++;
-      if (state.currentQ < state.questions.length) {
-        showQuestion();
-      } else {
-        showResults();
-      }
-    }, 1500);
+    }, correct ? 700 : 1800);
   }
 
   function quitGame() {
@@ -711,7 +805,6 @@
       ? (state.results.reduce((sum, r) => sum + r.time, 0) / state.results.length).toFixed(1)
       : 0;
 
-    // Title & stars
     const title = document.getElementById('results-title');
     const stars = document.getElementById('results-stars');
     const scoreEl = document.getElementById('results-score');
@@ -745,6 +838,20 @@
     document.getElementById('stat-time').textContent = totalTime + 's';
     document.getElementById('stat-avg').textContent = avgTime + 's';
 
+    // Speed badge
+    const badgeContainer = document.getElementById('speed-badge-container');
+    badgeContainer.innerHTML = '';
+    if (avgTime <= 2) {
+      badgeContainer.innerHTML = '<span class="speed-badge lightning">Lightning Speed!</span>';
+    } else if (avgTime <= 3.5) {
+      badgeContainer.innerHTML = '<span class="speed-badge fast">Super Fast!</span>';
+    } else if (avgTime <= 6) {
+      badgeContainer.innerHTML = '<span class="speed-badge steady">Steady Pace</span>';
+    } else {
+      badgeContainer.innerHTML = '<span class="speed-badge slow">Take Your Time</span>';
+    }
+    badgeContainer.style.textAlign = 'center';
+
     // Wrong answers list
     const wrongList = document.getElementById('wrong-list');
     wrongList.innerHTML = '';
@@ -759,25 +866,14 @@
         const div = document.createElement('div');
         div.className = 'wrong-item';
         div.innerHTML = `
-          <span class="q">${r.a} x ${r.b} = ${r.answer}</span>
+          <span class="q">${r.a} \u00d7 ${r.b} = ${r.answer}</span>
           <span>
-            ${r.userAnswer !== null ? `<span class="your-ans">${r.userAnswer}</span> → ` : 'skipped → '}
+            <span class="your-ans">${r.userAnswer}</span> \u2192
             <span class="correct-ans">${r.answer}</span>
           </span>
         `;
         wrongList.appendChild(div);
       }
-    }
-
-    // Speed badge
-    if (avgTime <= 2) {
-      scoreEl.insertAdjacentHTML('afterend', '<div><span class="speed-badge lightning">Lightning Speed!</span></div>');
-    } else if (avgTime <= 4) {
-      scoreEl.insertAdjacentHTML('afterend', '<div><span class="speed-badge fast">Super Fast!</span></div>');
-    } else if (avgTime <= 6) {
-      scoreEl.insertAdjacentHTML('afterend', '<div><span class="speed-badge steady">Steady Pace</span></div>');
-    } else {
-      scoreEl.insertAdjacentHTML('afterend', '<div><span class="speed-badge slow">Take Your Time</span></div>');
     }
 
     document.getElementById('progress-fill').style.width = '100%';
@@ -804,29 +900,9 @@
   }
 
   // === NAVIGATION ===
-  function tryAgain() {
-    // Clean up any leftover speed badges
-    document.querySelectorAll('.speed-badge').forEach(el => el.parentElement.remove());
-    startGame();
-  }
+  function tryAgain() { startGame(); }
+  function goHome() { showScreen('home-screen'); }
 
-  function goHome() {
-    document.querySelectorAll('.speed-badge').forEach(el => el.parentElement.remove());
-    showScreen('home-screen');
-  }
-
-  // === KEYBOARD HANDLER ===
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const gameScreen = document.getElementById('game-screen');
-      if (gameScreen.classList.contains('active')) {
-        const btn = document.getElementById('submit-btn');
-        if (!btn.disabled) submitAnswer();
-      }
-    }
-  });
-
-  // Init
   init();
 </script>
 
