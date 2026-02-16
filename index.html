@@ -87,26 +87,27 @@
 
   .settings-row label { color: var(--text-dim); }
 
-  .qty-btn {
+  .qty-select {
     font-family: 'Patrick Hand', cursive;
     font-size: 1.4em;
-    width: 44px;
-    height: 44px;
+    padding: 8px 16px;
     border: 2px solid var(--primary);
     border-radius: 10px;
     background: var(--card);
     color: var(--text);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a78bfa' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
   }
 
-  .qty-display {
-    font-size: 1.6em;
-    min-width: 40px;
-    text-align: center;
-    color: var(--primary-light);
+  .qty-select option {
+    background: var(--card);
+    color: var(--text);
   }
 
   /* === BUTTONS === */
@@ -422,9 +423,17 @@
 
   <div class="settings-row">
     <label>Questions:</label>
-    <button class="qty-btn" onclick="changeQty(-5)">-</button>
-    <span class="qty-display" id="qty-display">10</span>
-    <button class="qty-btn" onclick="changeQty(5)">+</button>
+    <select id="qty-select" class="qty-select" onchange="state.questionCount = parseInt(this.value)">
+      <option value="10">10</option>
+      <option value="15">15</option>
+      <option value="20">20</option>
+      <option value="25">25</option>
+      <option value="30" selected>30</option>
+      <option value="35">35</option>
+      <option value="40">40</option>
+      <option value="45">45</option>
+      <option value="50">50</option>
+    </select>
   </div>
 
   <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start!</button>
@@ -495,7 +504,7 @@
   // === STATE ===
   const state = {
     selectedTables: new Set(),
-    questionCount: 10,
+    questionCount: 30,
     mode: 'test',
     questions: [],
     currentQ: 0,
@@ -560,11 +569,6 @@
     document.querySelectorAll('.mode-option').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
-  }
-
-  function changeQty(delta) {
-    state.questionCount = Math.max(5, Math.min(50, state.questionCount + delta));
-    document.getElementById('qty-display').textContent = state.questionCount;
   }
 
   // === GENERATE PLAUSIBLE WRONG ANSWERS ===
