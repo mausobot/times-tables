@@ -11,15 +11,21 @@
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   :root {
-    --primary: #2563eb;
-    --primary-light: #60a5fa;
+    --primary: #a855f7;
+    --primary-light: #c084fc;
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
-    --bg: #0a1228;
-    --card: #102040;
-    --text: #e0eaff;
-    --text-dim: #bf8fa0;
+    --bg: #0f0a1a;
+    --card: #1a1230;
+    --text: #f0e6ff;
+    --text-dim: #a89bc2;
+    --rainbow-1: #ef4444;
+    --rainbow-2: #f97316;
+    --rainbow-3: #eab308;
+    --rainbow-4: #22c55e;
+    --rainbow-5: #3b82f6;
+    --rainbow-6: #a855f7;
   }
 
   body {
@@ -38,7 +44,8 @@
   .screen.active { display: flex; }
 
   h1 { font-size: 2.2em; text-align: center; margin-bottom: 10px; }
-  h2 { font-size: 1.6em; text-align: center; margin-bottom: 15px; color: var(--primary-light); }
+  h1 { background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  h2 { font-size: 1.6em; text-align: center; margin-bottom: 15px; background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
   .subtitle { font-size: 1.1em; color: var(--text-dim); text-align: center; margin-bottom: 25px; }
 
@@ -64,13 +71,33 @@
     -webkit-user-select: none;
     user-select: none;
   }
+  .table-btn:nth-child(1)  { border-color: #ef4444; }
+  .table-btn:nth-child(2)  { border-color: #f97316; }
+  .table-btn:nth-child(3)  { border-color: #eab308; }
+  .table-btn:nth-child(4)  { border-color: #22c55e; }
+  .table-btn:nth-child(5)  { border-color: #06b6d4; }
+  .table-btn:nth-child(6)  { border-color: #3b82f6; }
+  .table-btn:nth-child(7)  { border-color: #8b5cf6; }
+  .table-btn:nth-child(8)  { border-color: #a855f7; }
+  .table-btn:nth-child(9)  { border-color: #ec4899; }
+  .table-btn:nth-child(10) { border-color: #f43f5e; }
+  .table-btn:nth-child(11) { border-color: #14b8a6; }
 
   .table-btn.selected {
-    background: var(--primary);
     color: white;
-    border-color: var(--primary-light);
     transform: scale(1.05);
   }
+  .table-btn:nth-child(1).selected  { background: #ef4444; border-color: #ef4444; }
+  .table-btn:nth-child(2).selected  { background: #f97316; border-color: #f97316; }
+  .table-btn:nth-child(3).selected  { background: #eab308; border-color: #eab308; }
+  .table-btn:nth-child(4).selected  { background: #22c55e; border-color: #22c55e; }
+  .table-btn:nth-child(5).selected  { background: #06b6d4; border-color: #06b6d4; }
+  .table-btn:nth-child(6).selected  { background: #3b82f6; border-color: #3b82f6; }
+  .table-btn:nth-child(7).selected  { background: #8b5cf6; border-color: #8b5cf6; }
+  .table-btn:nth-child(8).selected  { background: #a855f7; border-color: #a855f7; }
+  .table-btn:nth-child(9).selected  { background: #ec4899; border-color: #ec4899; }
+  .table-btn:nth-child(10).selected { background: #f43f5e; border-color: #f43f5e; }
+  .table-btn:nth-child(11).selected { background: #14b8a6; border-color: #14b8a6; }
 
   .table-btn:active { transform: scale(0.95); }
 
@@ -91,7 +118,7 @@
     font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1.4em;
     padding: 8px 16px;
-    border: 2px solid var(--primary);
+    border: 2px solid #a855f7;
     border-radius: 10px;
     background: var(--card);
     color: var(--text);
@@ -126,9 +153,9 @@
 
   .btn:active { transform: scale(0.95); }
 
-  .btn-primary { background: linear-gradient(135deg, #60a5fa, #2563eb); }
-  .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
-  .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .btn-primary { background: linear-gradient(135deg, #a855f7, #3b82f6); }
+  .btn-success { background: linear-gradient(135deg, #22c55e, #06b6d4); }
+  .btn-danger { background: linear-gradient(135deg, #ef4444, #f97316); }
   .btn-secondary { background: linear-gradient(135deg, #6b7280, #4b5563); }
 
   .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
@@ -147,7 +174,7 @@
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #2563eb, #93c5fd);
+    background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7);
     border-radius: 4px;
     transition: width 0.3s;
   }
@@ -198,6 +225,12 @@
     -webkit-user-select: none;
     user-select: none;
   }
+  .choice-btn:nth-child(1) { border-color: #ef4444; }
+  .choice-btn:nth-child(2) { border-color: #f97316; }
+  .choice-btn:nth-child(3) { border-color: #eab308; }
+  .choice-btn:nth-child(4) { border-color: #22c55e; }
+  .choice-btn:nth-child(5) { border-color: #3b82f6; }
+  .choice-btn:nth-child(6) { border-color: #a855f7; }
 
   .choice-btn:active:not(.disabled) { transform: scale(0.95); }
 
@@ -497,7 +530,7 @@
   <div class="results-card">
     <div class="score-big" id="results-score"></div>
     <div id="new-high-score" style="display:none; text-align:center; margin: 5px 0;">
-      <span style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #0a1228; padding: 4px 16px; border-radius: 20px; font-size: 1.1em;">NEW HIGH SCORE!</span>
+      <span style="background: linear-gradient(135deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7); color: white; padding: 4px 16px; border-radius: 20px; font-size: 1.1em;">NEW HIGH SCORE!</span>
     </div>
     <div id="speed-badge-container"></div>
     <div class="stat-grid">
