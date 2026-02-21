@@ -8,7 +8,7 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json',
 };
 
-const MAX_SCORES = 10;
+const MAX_SCORES = 30;
 const KV_KEY = 'high-scores';
 
 export default {
