@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Division Challenge</title>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --primary: #ec4899;
+    --primary-light: #f9a8d4;
+    --success: #ec4899;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --bg: #220818;
+    --card: #341125;
+    --text: #fff1f8;
+    --text-dim: #e7a9c7;
+    --pink-1: #fdf2f8;
+    --pink-2: #f9a8d4;
+    --pink-3: #f472b6;
+    --pink-4: #ec4899;
+    --pink-5: #db2777;
+    --pink-6: #9d174d;
+  }
+
+  body {
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  .screen { display: none; width: 100%; max-width: 500px; padding: 20px; flex-direction: column; align-items: center; }
+  .screen.active { display: flex; }
+
+  h1 { font-size: 2.2em; text-align: center; margin-bottom: 10px; }
+  h1 { background: linear-gradient(90deg, #f9a8d4, #ec4899, #9d174d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  h2 { font-size: 1.6em; text-align: center; margin-bottom: 15px; background: linear-gradient(90deg, #f472b6, #ec4899, #9d174d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .subtitle { font-size: 1.1em; color: var(--text-dim); text-align: center; margin-bottom: 25px; }
+
+  /* === TABLE SELECTION === */
+  .table-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .table-btn {
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.4em;
+    padding: 14px 0;
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .table-btn:nth-child(1)  { border-color: #fdf2f8; }
+  .table-btn:nth-child(2)  { border-color: #fbcfe8; }
+  .table-btn:nth-child(3)  { border-color: #f9a8d4; }
+  .table-btn:nth-child(4)  { border-color: #f472b6; }
+  .table-btn:nth-child(5)  { border-color: #ec4899; }
+  .table-btn:nth-child(6)  { border-color: #db2777; }
+  .table-btn:nth-child(7)  { border-color: #9d174d; }
+  .table-btn:nth-child(8)  { border-color: #fbcfe8; }
+  .table-btn:nth-child(9)  { border-color: #f9a8d4; }
+  .table-btn:nth-child(10) { border-color: #ec4899; }
+  .table-btn:nth-child(11) { border-color: #db2777; }
+
+  .table-btn.selected {
+    color: white;
+    transform: scale(1.05);
+  }
+  .table-btn:nth-child(1).selected  { background: #fdf2f8; border-color: #fdf2f8; color: #220818; }
+  .table-btn:nth-child(2).selected  { background: #fbcfe8; border-color: #fbcfe8; color: #220818; }
+  .table-btn:nth-child(3).selected  { background: #f9a8d4; border-color: #f9a8d4; color: #220818; }
+  .table-btn:nth-child(4).selected  { background: #f472b6; border-color: #f472b6; color: #220818; }
+  .table-btn:nth-child(5).selected  { background: #ec4899; border-color: #ec4899; }
+  .table-btn:nth-child(6).selected  { background: #db2777; border-color: #db2777; }
+  .table-btn:nth-child(7).selected  { background: #9d174d; border-color: #9d174d; }
+  .table-btn:nth-child(8).selected  { background: #fbcfe8; border-color: #fbcfe8; color: #220818; }
+  .table-btn:nth-child(9).selected  { background: #f9a8d4; border-color: #f9a8d4; color: #220818; }
+  .table-btn:nth-child(10).selected { background: #ec4899; border-color: #ec4899; }
+  .table-btn:nth-child(11).selected { background: #db2777; border-color: #db2777; }
+
+  .table-btn:active { transform: scale(0.95); }
+
+  /* === SETTINGS === */
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    width: 100%;
+  }
+
+  .settings-row label { color: var(--text-dim); }
+
+  .qty-select {
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.4em;
+    padding: 8px 16px;
+    border: 2px solid #ec4899;
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ec4899' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .qty-select option {
+    background: var(--card);
+    color: var(--text);
+  }
+
+  /* === BUTTONS === */
+  .btn {
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.4em;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    min-width: 200px;
+    text-align: center;
+  }
+
+  .btn:active { transform: scale(0.95); }
+
+  .btn-primary { background: linear-gradient(135deg, #ec4899, #be185d); }
+  .btn-success { background: linear-gradient(135deg, #ec4899, #be185d); }
+  .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .btn-secondary { background: linear-gradient(135deg, #6b7280, #4b5563); }
+
+  .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  .btn-row { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+
+  /* === GAME SCREEN === */
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--card);
+    border-radius: 4px;
+    margin-bottom: 15px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbcfe8, #f472b6, #ec4899, #9d174d, #ec4899, #fbcfe8);
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+
+  .game-stats {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    color: var(--text-dim);
+  }
+
+  .question-area {
+    text-align: center;
+    margin: 10px 0;
+    width: 100%;
+  }
+
+  .question-text {
+    font-size: 3.2em;
+    margin-bottom: 20px;
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+
+  .question-text .operator { color: var(--primary-light); }
+
+  /* === MULTIPLE CHOICE === */
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .choice-btn {
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.8em;
+    padding: 16px 0;
+    border: 3px solid var(--primary);
+    border-radius: 14px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .choice-btn:nth-child(1) { border-color: #fbcfe8; }
+  .choice-btn:nth-child(2) { border-color: #f9a8d4; }
+  .choice-btn:nth-child(3) { border-color: #ec4899; }
+  .choice-btn:nth-child(4) { border-color: #db2777; }
+  .choice-btn:nth-child(5) { border-color: #f472b6; }
+  .choice-btn:nth-child(6) { border-color: #9d174d; }
+
+  .choice-btn:active:not(.disabled) { transform: scale(0.95); }
+
+  .choice-btn.correct {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.25);
+    color: var(--success);
+  }
+
+  .choice-btn.wrong {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.25);
+    color: var(--danger);
+    animation: shake 0.4s;
+  }
+
+  .choice-btn.reveal-correct {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+  }
+
+  .choice-btn.disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  .timer {
+    font-size: 1.8em;
+    color: var(--warning);
+    margin-top: 10px;
+  }
+
+  .feedback {
+    font-size: 1.5em;
+    margin-top: 10px;
+    min-height: 36px;
+    transition: all 0.2s;
+  }
+
+  .feedback.correct { color: var(--success); }
+  .feedback.wrong { color: var(--danger); }
+
+  /* === RESULTS === */
+  .results-card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 25px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .score-big {
+    font-size: 3em;
+    text-align: center;
+    margin: 10px 0;
+  }
+
+  .score-big.gold { color: #fbbf24; }
+  .score-big.silver { color: #9ca3af; }
+  .score-big.bronze { color: #d97706; }
+  .score-big.needs-work { color: var(--danger); }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 15px;
+  }
+
+  .stat-box {
+    background: rgba(219, 39, 119, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .stat-box .value { font-size: 1.8em; color: var(--primary-light); }
+  .stat-box .label { font-size: 0.9em; color: var(--text-dim); }
+
+  .wrong-answers-list {
+    margin-top: 15px;
+    width: 100%;
+  }
+
+  .wrong-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 1.1em;
+  }
+
+  .wrong-item .q { color: var(--text); }
+  .wrong-item .your-ans { color: var(--danger); text-decoration: line-through; }
+  .wrong-item .correct-ans { color: var(--success); }
+
+  .stars { font-size: 2.5em; text-align: center; margin: 10px 0; }
+
+  /* === CELEBRATION === */
+  .celebration {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .confetti {
+    position: absolute;
+    top: -20px;
+    font-size: 1.8em;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100dvh) rotate(720deg); opacity: 0; }
+  }
+
+  .speed-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    margin-top: 5px;
+  }
+
+  .speed-badge.lightning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+  .speed-badge.fast { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+  .speed-badge.steady { background: rgba(244, 114, 182, 0.18); color: #f472b6; }
+  .speed-badge.slow { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+  /* === MODE TOGGLE === */
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--primary);
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .mode-option {
+    flex: 1;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.15em;
+    padding: 12px;
+    background: var(--card);
+    color: var(--text-dim);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .mode-option.active {
+    background: var(--primary);
+    color: white;
+  }
+
+  .select-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+  }
+
+  .select-link {
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1.05em;
+    color: var(--primary-light);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 4px 0;
+  }
+
+  /* === HIGH SCORE TABLE === */
+  .hs-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 1.15em;
+  }
+
+  .hs-row.gold { background: rgba(251, 191, 36, 0.15); }
+  .hs-row.silver { background: rgba(156, 163, 175, 0.1); }
+  .hs-row.bronze { background: rgba(217, 119, 6, 0.1); }
+  .hs-row.normal { background: rgba(16, 185, 129, 0.08); }
+  .hs-row.you { border: 2px solid var(--primary-light); }
+
+  .hs-rank { width: 36px; font-size: 1.3em; text-align: center; }
+  .hs-name { flex: 1; color: var(--primary-light); font-size: 1.1em; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hs-detail { font-size: 0.7em; color: var(--text-dim); }
+  .hs-score { width: 70px; text-align: right; color: var(--text); font-size: 1.2em; }
+  .hs-date { width: 70px; text-align: right; color: var(--text-dim); font-size: 0.8em; }
+
+  .exit-btn {
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1em;
+    padding: 8px 20px;
+    min-width: auto;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(135deg, #be185d, #9d174d);
+    margin-top: 10px;
+  }
+
+  .exit-btn:active { transform: scale(0.95); }
+</style>
+</head>
+<body>
+
+<!-- ========== HOME SCREEN ========== -->
+<div id="home-screen" class="screen active">
+  <h1>Division Challenge</h1>
+  <p class="subtitle">Pick your divisors and start the challenge!</p>
+
+  <div class="mode-toggle">
+    <button class="mode-option active" data-mode="test" onclick="setMode('test')">Timed Test</button>
+    <button class="mode-option" data-mode="practice" onclick="setMode('practice')">Practice</button>
+  </div>
+
+  <h2>Divide by which numbers?</h2>
+  <div class="select-row">
+    <button class="select-link" onclick="selectAll()">Select All</button>
+    <button class="select-link" onclick="selectNone()">Clear</button>
+  </div>
+  <div class="table-grid" id="table-grid"></div>
+
+  <div class="settings-row">
+    <label>Questions:</label>
+    <select id="qty-select" class="qty-select" onchange="state.questionCount = parseInt(this.value)">
+      <option value="10">10</option>
+      <option value="15">15</option>
+      <option value="20">20</option>
+      <option value="25">25</option>
+      <option value="30" selected>30</option>
+      <option value="35">35</option>
+      <option value="40">40</option>
+      <option value="45">45</option>
+      <option value="50">50</option>
+    </select>
+  </div>
+
+  <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start!</button>
+
+  <div id="home-high-scores" class="results-card" style="display:none; margin-top: 20px;">
+    <h2 style="text-align:center; margin-bottom: 12px; color: #fbbf24;">High Scores</h2>
+    <div id="home-hs-table"></div>
+  </div>
+</div>
+
+<!-- ========== GAME SCREEN ========== -->
+<div id="game-screen" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="game-stats">
+    <span id="question-counter">1 / 10</span>
+    <span id="score-display">Score: 0</span>
+    <span id="streak-display"></span>
+  </div>
+
+  <div class="question-area">
+    <div class="question-text">
+      <span id="q-a">21</span> <span class="operator">&divide;</span> <span id="q-b">7</span> <span class="operator">= ?</span>
+    </div>
+
+    <div class="choices-grid" id="choices-grid"></div>
+
+    <div class="timer" id="timer-display"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <button class="exit-btn" onclick="quitGame()">Exit</button>
+</div>
+
+<!-- ========== RESULTS SCREEN ========== -->
+<div id="results-screen" class="screen">
+  <h1 id="results-title">Well Done!</h1>
+  <div class="stars" id="results-stars"></div>
+
+  <div class="results-card">
+    <div class="score-big" id="results-score"></div>
+    <div id="new-high-score" style="display:none; text-align:center; margin: 5px 0;">
+      <span style="background: linear-gradient(135deg, #f9a8d4, #ec4899, #be185d); color: white; padding: 4px 16px; border-radius: 20px; font-size: 1.1em;">NEW HIGH SCORE!</span>
+    </div>
+    <div id="speed-badge-container"></div>
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="value" id="stat-correct">0</div>
+        <div class="label">Correct</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="stat-pct">0%</div>
+        <div class="label">Accuracy</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="stat-time">0s</div>
+        <div class="label">Total Time</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="stat-avg">0s</div>
+        <div class="label">Avg Speed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIGH SCORE NAME ENTRY -->
+  <div id="name-entry" style="display:none; text-align:center; margin-bottom: 15px;">
+    <p style="font-size: 1.2em; color: var(--primary-light); margin-bottom: 10px;">Enter your name:</p>
+    <input type="text" id="name-input" maxlength="15" autocomplete="off" autocapitalize="words"
+      style="font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif; font-size: 1.5em; width: 220px; text-align: center;
+      border: 3px solid var(--primary); border-radius: 12px; background: var(--card); color: var(--primary-light);
+      padding: 10px; outline: none;">
+    <br>
+    <button class="btn btn-primary" style="margin-top: 10px; min-width: 150px;" onclick="saveHighScore()">Save</button>
+  </div>
+
+  <!-- HIGH SCORE TABLE -->
+  <div id="high-score-section" class="results-card" style="display:none;">
+    <h2 style="text-align:center; margin-bottom: 12px; color: #fbbf24;">High Scores</h2>
+    <div id="high-score-table"></div>
+  </div>
+
+  <div class="wrong-answers-list" id="wrong-list"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="tryAgain()">Try Again</button>
+    <button class="btn btn-secondary" onclick="goHome()">Change Divisors</button>
+  </div>
+</div>
+
+<div class="celebration" id="celebration"></div>
+
+<script>
+  // === STATE ===
+  const state = {
+    selectedTables: new Set(),
+    questionCount: 30,
+    mode: 'test',
+    questions: [],
+    currentQ: 0,
+    score: 0,
+    streak: 0,
+    bestStreak: 0,
+    results: [],
+    gameStartTime: 0,
+    questionStartTime: 0,
+    timerInterval: null,
+    answering: false,
+  };
+
+  // === INIT ===
+  function init() {
+    const grid = document.getElementById('table-grid');
+    // Start from 2 (skip dividing by 1)
+    for (let i = 2; i <= 12; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'table-btn';
+      btn.textContent = i;
+      btn.dataset.table = i;
+      btn.addEventListener('click', () => toggleTable(i, btn));
+      grid.appendChild(btn);
+    }
+  }
+
+  function toggleTable(n, btn) {
+    if (state.selectedTables.has(n)) {
+      state.selectedTables.delete(n);
+      btn.classList.remove('selected');
+    } else {
+      state.selectedTables.add(n);
+      btn.classList.add('selected');
+    }
+    updateStartBtn();
+  }
+
+  function selectAll() {
+    document.querySelectorAll('.table-btn').forEach(btn => {
+      const n = parseInt(btn.dataset.table);
+      state.selectedTables.add(n);
+      btn.classList.add('selected');
+    });
+    updateStartBtn();
+  }
+
+  function selectNone() {
+    document.querySelectorAll('.table-btn').forEach(btn => {
+      state.selectedTables.delete(parseInt(btn.dataset.table));
+      btn.classList.remove('selected');
+    });
+    updateStartBtn();
+  }
+
+  function updateStartBtn() {
+    document.getElementById('start-btn').disabled = state.selectedTables.size === 0;
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    document.querySelectorAll('.mode-option').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+  }
+
+  // === GENERATE PLAUSIBLE WRONG ANSWERS ===
+  function generateDistractors(dividend, divisor, correctAnswer) {
+    const distractors = new Set();
+
+    // Nearby quotients are the most plausible mistakes.
+    for (let delta = -3; delta <= 3; delta++) {
+      if (delta !== 0) distractors.add(correctAnswer + delta);
+    }
+
+    // Common error: count one group too many or too few.
+    distractors.add((dividend + divisor) / divisor);
+    distractors.add((dividend - divisor) / divisor);
+
+    // Include other familiar times-table answers for variety.
+    for (let answer = 2; answer <= 12; answer++) {
+      distractors.add(answer);
+    }
+
+    const valid = [...distractors]
+      .filter(value => Number.isInteger(value) && value >= 1 && value <= 12 && value !== correctAnswer)
+      .sort((x, y) => Math.abs(x - correctAnswer) - Math.abs(y - correctAnswer));
+
+    // Keep four close answers and add one slightly further away.
+    const picked = valid.slice(0, 4);
+    const remaining = valid.slice(4);
+    if (remaining.length) {
+      picked.push(remaining[Math.floor(Math.random() * remaining.length)]);
+    }
+
+    return picked.slice(0, 5);
+  }
+
+  // === GENERATE QUESTIONS ===
+  function generateQuestions() {
+    const tables = [...state.selectedTables];
+    const pool = [];
+    for (const t of tables) {
+      // Use exact division facts with quotients from 2 to 12.
+      for (let quotient = 2; quotient <= 12; quotient++) {
+        pool.push({ dividend: t * quotient, divisor: t, answer: quotient });
+      }
+    }
+
+    const questions = [];
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    for (let i = 0; i < state.questionCount; i++) {
+      const fact = shuffled[i % shuffled.length];
+      const a = fact.dividend;
+      const b = fact.divisor;
+      const answer = fact.answer;
+
+      const distractors = generateDistractors(a, b, answer);
+      // Build 6 choices: correct + 5 distractors, shuffled
+      const choices = [answer, ...distractors].sort(() => Math.random() - 0.5);
+
+      questions.push({ a, b, answer, choices });
+    }
+
+    return questions.sort(() => Math.random() - 0.5);
+  }
+
+  // === GAME ===
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function startGame() {
+    state.questions = generateQuestions();
+    state.currentQ = 0;
+    state.score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.results = [];
+    state.gameStartTime = Date.now();
+
+    showScreen('game-screen');
+    showQuestion();
+  }
+
+  function showQuestion() {
+    state.answering = false;
+    const q = state.questions[state.currentQ];
+    document.getElementById('q-a').textContent = q.a;
+    document.getElementById('q-b').textContent = q.b;
+    document.getElementById('question-counter').textContent = `${state.currentQ + 1} / ${state.questions.length}`;
+    document.getElementById('score-display').textContent = `Score: ${state.score}`;
+    document.getElementById('streak-display').textContent = state.streak >= 2 ? `${state.streak} streak!` : '';
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+
+    const pct = (state.currentQ / state.questions.length) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+
+    // Render choices
+    const grid = document.getElementById('choices-grid');
+    grid.innerHTML = '';
+    // Use 3 rows x 2 cols for 6 choices
+    for (const choice of q.choices) {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choice;
+      btn.addEventListener('click', () => pickAnswer(choice, btn));
+      grid.appendChild(btn);
+    }
+
+    state.questionStartTime = Date.now();
+
+    if (state.mode === 'test') {
+      updateTimer();
+      clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(updateTimer, 100);
+    } else {
+      document.getElementById('timer-display').textContent = '';
+    }
+  }
+
+  function updateTimer() {
+    const elapsed = ((Date.now() - state.questionStartTime) / 1000).toFixed(1);
+    document.getElementById('timer-display').textContent = elapsed + 's';
+  }
+
+  function pickAnswer(choice, btnEl) {
+    if (state.answering) return;
+    state.answering = true;
+
+    clearInterval(state.timerInterval);
+    const timeTaken = (Date.now() - state.questionStartTime) / 1000;
+    const q = state.questions[state.currentQ];
+    const correct = choice === q.answer;
+
+    // Disable all choice buttons
+    document.querySelectorAll('.choice-btn').forEach(b => b.classList.add('disabled'));
+
+    const feedback = document.getElementById('feedback');
+
+    if (correct) {
+      // Points: 10 base + speed bonus (max 10 for <1.5s, scaling down to 0 at 8s+)
+      let speedBonus = 0;
+      if (timeTaken < 1.5) speedBonus = 10;
+      else if (timeTaken < 3) speedBonus = 7;
+      else if (timeTaken < 5) speedBonus = 4;
+      else if (timeTaken < 8) speedBonus = 2;
+      // Streak multiplier: x1.5 at 3+, x2 at 5+
+      let streakMult = 1;
+      if (state.streak >= 4) streakMult = 2;
+      else if (state.streak >= 2) streakMult = 1.5;
+      const points = Math.round((10 + speedBonus) * streakMult);
+      state.score += points;
+      state.streak++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      btnEl.classList.add('correct');
+      feedback.className = 'feedback correct';
+
+      if (timeTaken < 1.5) feedback.textContent = `Lightning! +${points}`;
+      else if (timeTaken < 3) feedback.textContent = `Super quick! +${points}`;
+      else if (timeTaken < 5) feedback.textContent = `Great! +${points}`;
+      else feedback.textContent = `Correct! +${points}`;
+    } else {
+      state.streak = 0;
+      btnEl.classList.add('wrong');
+      feedback.className = 'feedback wrong';
+      feedback.textContent = `${q.a} \u00f7 ${q.b} = ${q.answer}`;
+
+      // Highlight the correct answer
+      document.querySelectorAll('.choice-btn').forEach(b => {
+        if (parseInt(b.textContent) === q.answer) {
+          b.classList.add('reveal-correct');
+        }
+      });
+    }
+
+    state.results.push({
+      a: q.a,
+      b: q.b,
+      answer: q.answer,
+      userAnswer: choice,
+      correct,
+      time: timeTaken,
+    });
+
+    setTimeout(() => {
+      state.currentQ++;
+      if (state.currentQ < state.questions.length) {
+        showQuestion();
+      } else {
+        showResults();
+      }
+    }, correct ? 700 : 1800);
+  }
+
+  function quitGame() {
+    clearInterval(state.timerInterval);
+    goHome();
+  }
+
+  // === RESULTS ===
+  async function showResults() {
+    await fetchHighScores();
+    clearInterval(state.timerInterval);
+    const totalTime = ((Date.now() - state.gameStartTime) / 1000).toFixed(1);
+    const correctCount = state.results.filter(r => r.correct).length;
+    const wrongCount = state.results.length - correctCount;
+    const pct = Math.round((correctCount / state.results.length) * 100);
+    // Max possible score: every question lightning + max streak
+    const maxScore = state.results.length * 20 * 2; // 20pts * x2 streak
+
+    const avgTime = state.results.length > 0
+      ? (state.results.reduce((sum, r) => sum + r.time, 0) / state.results.length).toFixed(1)
+      : 0;
+
+    const title = document.getElementById('results-title');
+    const stars = document.getElementById('results-stars');
+    const scoreEl = document.getElementById('results-score');
+
+    // Score is the star of the show
+    scoreEl.textContent = state.score.toLocaleString();
+
+    if (pct === 100) {
+      title.textContent = 'Perfect Score!';
+      stars.textContent = '\u2B50\u2B50\u2B50';
+      scoreEl.className = 'score-big gold';
+      launchCelebration();
+    } else if (pct >= 80) {
+      title.textContent = 'Great Job!';
+      stars.textContent = '\u2B50\u2B50';
+      scoreEl.className = 'score-big silver';
+      launchCelebration();
+    } else if (pct >= 60) {
+      title.textContent = 'Good Effort!';
+      stars.textContent = '\u2B50';
+      scoreEl.className = 'score-big bronze';
+    } else {
+      title.textContent = 'Keep Practising!';
+      stars.textContent = '';
+      scoreEl.className = 'score-big needs-work';
+    }
+
+    document.getElementById('stat-correct').textContent = `${correctCount}/${state.results.length}`;
+    document.getElementById('stat-pct').textContent = pct + '%';
+    document.getElementById('stat-time').textContent = totalTime + 's';
+    document.getElementById('stat-avg').textContent = avgTime + 's';
+
+    // Speed badge
+    const badgeContainer = document.getElementById('speed-badge-container');
+    badgeContainer.innerHTML = '';
+    if (avgTime <= 2) {
+      badgeContainer.innerHTML = '<span class="speed-badge lightning">Lightning Speed!</span>';
+    } else if (avgTime <= 3.5) {
+      badgeContainer.innerHTML = '<span class="speed-badge fast">Super Fast!</span>';
+    } else if (avgTime <= 6) {
+      badgeContainer.innerHTML = '<span class="speed-badge steady">Steady Pace</span>';
+    } else {
+      badgeContainer.innerHTML = '<span class="speed-badge slow">Take Your Time</span>';
+    }
+    badgeContainer.style.textAlign = 'center';
+
+    // High scores only for timed test mode
+    if (state.mode === 'test') {
+      const isHighScore = checkHighScore(state.score);
+      document.getElementById('new-high-score').style.display = isHighScore ? 'block' : 'none';
+      document.getElementById('high-score-section').style.display = isHighScore ? 'none' : 'block';
+
+      if (isHighScore) {
+        state.pendingScore = state.score;
+        if (state.playerName) {
+          document.getElementById('name-entry').style.display = 'none';
+          await saveHighScoreAuto(state.playerName, state.score);
+        } else {
+          document.getElementById('name-entry').style.display = 'block';
+          const input = document.getElementById('name-input');
+          input.value = '';
+          setTimeout(() => input.focus(), 300);
+        }
+      } else {
+        document.getElementById('name-entry').style.display = 'none';
+        renderHighScores();
+      }
+    } else {
+      document.getElementById('new-high-score').style.display = 'none';
+      document.getElementById('name-entry').style.display = 'none';
+      document.getElementById('high-score-section').style.display = 'none';
+    }
+
+    // Wrong answers list
+    const wrongList = document.getElementById('wrong-list');
+    wrongList.innerHTML = '';
+    const wrongs = state.results.filter(r => !r.correct);
+    if (wrongs.length > 0) {
+      const heading = document.createElement('h2');
+      heading.textContent = 'Ones to practise:';
+      heading.style.marginBottom = '10px';
+      wrongList.appendChild(heading);
+
+      for (const r of wrongs) {
+        const div = document.createElement('div');
+        div.className = 'wrong-item';
+        div.innerHTML = `
+          <span class="q">${r.a} \u00f7 ${r.b} = ${r.answer}</span>
+          <span>
+            <span class="your-ans">${r.userAnswer}</span> \u2192
+            <span class="correct-ans">${r.answer}</span>
+          </span>
+        `;
+        wrongList.appendChild(div);
+      }
+    }
+
+    document.getElementById('progress-fill').style.width = '100%';
+    showScreen('results-screen');
+  }
+
+  // === CELEBRATION ===
+  function launchCelebration() {
+    const container = document.getElementById('celebration');
+    container.innerHTML = '';
+    const emojis = ['\uD83C\uDF1F', '\uD83C\uDF89', '\uD83C\uDF8A', '\u2728', '\uD83C\uDFC6', '\uD83D\uDCAB', '\uD83E\uDD29'];
+
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = Math.random() * 100 + '%';
+      el.style.animationDuration = (2 + Math.random() * 2) + 's';
+      el.style.animationDelay = Math.random() * 1.5 + 's';
+      container.appendChild(el);
+    }
+
+    setTimeout(() => container.innerHTML = '', 5000);
+  }
+
+  // === HIGH SCORES ===
+  // Scores are kept on this device. API_URL can be set later to enable a shared leaderboard.
+  const API_URL = '';
+  const LOCAL_SCORE_KEY = 'division-challenge-high-scores';
+  const MAX_HIGH_SCORES = 30;
+  let cachedScores = [];
+
+  function loadLocalScores() {
+    try {
+      const scores = JSON.parse(localStorage.getItem(LOCAL_SCORE_KEY) || '[]');
+      return Array.isArray(scores) ? scores : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveLocalScores() {
+    try {
+      localStorage.setItem(LOCAL_SCORE_KEY, JSON.stringify(cachedScores));
+    } catch { /* scores still work for this session */ }
+  }
+
+  function addLocalScore(name, score) {
+    cachedScores.push({
+      name,
+      score,
+      questions: state.questionCount,
+      tables: [...state.selectedTables].sort((a, b) => a - b),
+      date: new Date().getDate() + '/' + (new Date().getMonth() + 1),
+      ts: Date.now(),
+    });
+    cachedScores.sort((a, b) => b.score - a.score);
+    if (cachedScores.length > MAX_HIGH_SCORES) cachedScores.length = MAX_HIGH_SCORES;
+    saveLocalScores();
+  }
+
+  async function fetchHighScores() {
+    cachedScores = loadLocalScores();
+    if (!API_URL) return cachedScores;
+
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error('Could not load scores');
+      cachedScores = await res.json();
+      saveLocalScores();
+    } catch { /* use scores saved on this device */ }
+    return cachedScores;
+  }
+
+  function checkHighScore(score) {
+    if (score === 0) return false;
+    if (cachedScores.length < MAX_HIGH_SCORES) return true;
+    return score > cachedScores[cachedScores.length - 1].score;
+  }
+
+  async function saveHighScore() {
+    const input = document.getElementById('name-input');
+    let name = input.value.trim();
+    if (!name) name = '???';
+    name = name.substring(0, 15);
+
+    // Remember name for this session
+    state.playerName = name;
+
+    if (!API_URL) {
+      addLocalScore(name, state.pendingScore);
+    } else try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, score: state.pendingScore, questions: state.questionCount, tables: [...state.selectedTables].sort((a,b)=>a-b) }),
+      });
+      if (!res.ok) throw new Error('Could not save score');
+      cachedScores = await res.json();
+      saveLocalScores();
+    } catch {
+      addLocalScore(name, state.pendingScore);
+    }
+
+    document.getElementById('name-entry').style.display = 'none';
+    document.getElementById('high-score-section').style.display = 'block';
+    renderHighScores(state.pendingScore);
+  }
+
+  async function saveHighScoreAuto(name, score) {
+    if (!API_URL) {
+      addLocalScore(name, score);
+    } else try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, score, questions: state.questionCount, tables: [...state.selectedTables].sort((a,b)=>a-b) }),
+      });
+      if (!res.ok) throw new Error('Could not save score');
+      cachedScores = await res.json();
+      saveLocalScores();
+    } catch {
+      addLocalScore(name, score);
+    }
+    document.getElementById('high-score-section').style.display = 'block';
+    renderHighScores(score);
+  }
+
+  function renderHighScores(highlightScore) {
+    renderScoreTable(cachedScores, 'high-score-table', 'high-score-section', highlightScore);
+  }
+
+  function renderScoreTable(scores, tableId, sectionId, highlightScore) {
+    const section = document.getElementById(sectionId);
+    const table = document.getElementById(tableId);
+
+    if (scores.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    table.innerHTML = '';
+
+    const rankEmojis = ['🥇', '🥈', '🥉'];
+    let highlighted = false;
+
+    scores.forEach((entry, i) => {
+      const row = document.createElement('div');
+      const tier = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal';
+      const isYou = !highlighted && highlightScore && entry.score === highlightScore;
+      if (isYou) highlighted = true;
+      row.className = `hs-row ${tier}${isYou ? ' you' : ''}`;
+
+      const tablesStr = entry.tables ? entry.tables.join(',') : '';
+      const detail = [entry.questions ? entry.questions + 'q' : '', tablesStr ? '\u00f7' + tablesStr : ''].filter(Boolean).join(' ');
+      row.innerHTML = `
+        <span class="hs-rank">${i < 3 ? rankEmojis[i] : (i + 1)}</span>
+        <span class="hs-name">${entry.name || entry.initials || '???'}${detail ? '<br><span class="hs-detail">' + detail + '</span>' : ''}</span>
+        <span class="hs-score">${entry.score.toLocaleString()}</span>
+        <span class="hs-date">${entry.date || ''}</span>
+      `;
+      table.appendChild(row);
+    });
+  }
+
+  // === NAVIGATION ===
+  function tryAgain() { startGame(); }
+  async function goHome() { showScreen('home-screen'); await renderHomeHighScores(); }
+
+  async function renderHomeHighScores() {
+    await fetchHighScores();
+    renderScoreTable(cachedScores, 'home-hs-table', 'home-high-scores');
+  }
+
+  // Enter key for initials
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.getElementById('name-entry').style.display !== 'none') {
+      saveHighScore();
+    }
+  });
+
+  init();
+  selectAll();
+  renderHomeHighScores(); // fire-and-forget on load
+</script>
+
+</body>
+</html>
