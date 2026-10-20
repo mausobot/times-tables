@@ -1,11 +1,12 @@
 export const normalise = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
 export function findCar(cars,make,model,trim) { return cars.find(c=>normalise(c.make)===normalise(make)&&normalise(c.model)===normalise(model)&&normalise(c.trim)===normalise(trim)); }
-export function validate({year,price,horizon,tail,retention,basis},nowYear) {
+export function validate({year,price,horizon,tail,retention,basis,generic},nowYear) {
  if (!Number.isInteger(year)||year<2000||year>nowYear) throw Error(`Enter a registration year between 2000 and ${nowYear}.`);
  if (!Number.isFinite(price)||price<500||price>2000000) throw Error('Enter a price between £500 and £2,000,000.');
  if (!Number.isInteger(horizon)||horizon<1||horizon>10) throw Error('Choose a period from 1 to 10 years.');
  if (!Number.isFinite(tail)||tail<.01||tail>.5) throw Error('Annual depreciation must be between 1% and 50%.');
  if (!Number.isFinite(retention)||retention<.05||retention>.99) throw Error('Three-year retention must be between 5% and 99%.');
+ if (generic&&basis==='new'&&retention>.75) throw Error('Three-year retention cannot exceed the assumed first-year retention of 75%.');
  if (!['new','today'].includes(basis)) throw Error('Choose a starting-price basis.');
 }
 // Source benchmark: constant percentage interpolation passes through both published points.
